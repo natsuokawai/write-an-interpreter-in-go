@@ -4,4 +4,4 @@ services:
     build: .
     tty: true
     volumes:
-      - .:/work/go
+      - .:/work/go/src
