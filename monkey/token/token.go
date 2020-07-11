@@ -38,7 +38,14 @@ const (
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 
-	// operand
-	ASSIGN = "="
-	PLUS   = "+"
+	// operators
+	ASSIGN   = "="
+	PLUS     = "+"
+	MINUS    = "-"
+	BANG     = "!"
+	ASTERISK = "*"
+	SLASH    = "/"
+
+	LT = "<"
+	GT = ">"
 )
