@@ -4,7 +4,7 @@ type TokenType string
 
 type Token struct {
 	Type    TokenType
-	Literal String
+	Literal string
 }
 
 const (
@@ -14,7 +14,7 @@ const (
 	IDENT = "IDENT" // variable name
 	INT   = "INT"
 
-	COMMA = ","
+	COMMA     = ","
 	SEMICOLON = ";"
 
 	LPAREN = "("
@@ -25,4 +25,8 @@ const (
 	// keywords
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
+
+	// operand
+	ASSIGN = "="
+	PLUS   = "+"
 )
