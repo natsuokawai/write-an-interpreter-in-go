@@ -346,20 +346,36 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 }
 
 func (p *Parser) parseFunctionLiteral() ast.Expression {
-	fn := &ast.FunctionLiteral{
-		Token: p.curToken,
-		Parameters: []*ast.Identifier{},
-	}
+	fn := &ast.FunctionLiteral{Token: p.curToken}
 
 	// parase "( parameters )"
+	fn.Parameters = p.parseFunctionParameters()
+
+	// parse block statement
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+	fn.Body = p.parseBlockStatement()
+
+	return fn
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	parameters := []*ast.Identifier{}
+
 	if !p.expectPeek(token.LPAREN) {
 		return nil
 	}
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		return parameters
+	}
+
 	for !p.peekTokenIs(token.RPAREN) {
 	    p.nextToken()
 		param := p.parseIdentifier()
 		if param != nil {
-		  fn.Parameters = append(fn.Parameters, param.(*ast.Identifier))
+		  parameters = append(parameters, param.(*ast.Identifier))
 		}
 		if p.peekTokenIs(token.COMMA) {
 			p.nextToken()
@@ -369,11 +385,5 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 		return nil
 	}
 
-	// parse block statement
-	if !p.expectPeek(token.LBRACE) {
-		return nil
-	}
-	fn.Body = p.parseBlockStatement()
-
-	return fn
+	return parameters
 }
