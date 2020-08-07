@@ -298,25 +298,22 @@ func (p *Parser) parseIfExpression() ast.Expression {
 		Token: p.curToken,
 	}
 
-	p.nextToken() // skip "if"
-
 	// parse "( condition )"
-	if !p.curTokenIs(token.LPAREN) {
+	if !p.expectPeek(token.LPAREN) {
 		return nil
 	}
 	exp.Condition = p.parseExpression(LOWEST)
-	p.nextToken() // skip ')'
 
 	// parse "{ consequence }"
-	if !p.curTokenIs(token.LBRACE) {
+	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}
 	exp.Consequence = p.parseBlockStatement()
 
 	// parse "{ alternative }"
 	if p.peekTokenIs(token.ELSE) {
-	    p.nextToken() // skip 'else'
-		if !p.curTokenIs(token.LBRACE) {
+        p.nextToken() // skip 'else'
+		if !p.expectPeek(token.LBRACE) {
 			return nil
 		}
 		exp.Alternative = p.parseBlockStatement()	
