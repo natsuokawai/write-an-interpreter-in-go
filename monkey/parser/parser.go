@@ -72,6 +72,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
+	p.registerPrefix(token.IF, p.parseIfExpression)
 	
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -284,10 +285,64 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 
 	// curToken is one step ahead of token.LPAREN
 	// because peekToken(token.LPAREN) returns LOWEST
-	// so it doesn't satisfy for loop condition in parseExpression
+	// so it doesn't satisfy for-loop condition in parseExpression
 	if !p.expectPeek(token.RPAREN) {
 		return nil
 	}
 
 	return exp
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	exp := &ast.IfExpression{
+		Token: p.curToken,
+	}
+
+	p.nextToken() // skip "if"
+
+	// parse "( condition )"
+	if !p.curTokenIs(token.LPAREN) {
+		return nil
+	}
+	exp.Condition = p.parseExpression(LOWEST)
+	p.nextToken() // skip ')'
+
+	// parse "{ consequence }"
+	if !p.curTokenIs(token.LBRACE) {
+		return nil
+	}
+	exp.Consequence = p.parseBlockStatement()
+
+	// parse "{ alternative }"
+	if p.peekTokenIs(token.ELSE) {
+	    p.nextToken() // skip 'else'
+		if !p.curTokenIs(token.LBRACE) {
+			return nil
+		}
+		exp.Alternative = p.parseBlockStatement()	
+	}
+
+	return exp
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	bs := &ast.BlockStatement{
+		Token:      p.curToken,
+	}
+
+	p.nextToken() // skip "{"
+
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			bs.Statements = append(bs.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	if !p.curTokenIs(token.RBRACE) {
+		return nil
+	}
+	
+	return bs	
 }
