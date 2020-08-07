@@ -494,7 +494,7 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 }
 
 func TestIfExpression(t *testing.T) {
-	input := `if (x < y) { x }`
+	input := `if (x < y) { x } else { y }`
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
@@ -527,7 +527,15 @@ func TestIfExpression(t *testing.T) {
 	if !testIdentifier(t, consequence.Expression, "x") {
 		return
 	}
-	if exp.Alternative != nil {
-		t.Errorf("exp.Alternative.Statements was not nil. got=%+v", exp.Alternative)
+	// if exp.Alternative != nil {
+	// 	t.Errorf("exp.Alternative.Statements was not nil. got=%+v", exp.Alternative)
+
+	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			exp.Alternative.Statements[0])
+	}
+	if !testIdentifier(t, alternative.Expression, "y") {
+		return
 	}
 }
