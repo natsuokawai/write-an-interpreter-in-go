@@ -143,9 +143,11 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
+	p.nextToken() // skip "="
 
-	for !p.curTokenIs(token.SEMICOLON) {
-		p.nextToken()
+	stmt.Value = p.parseExpression(LOWEST)
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken() // skip ";"
 	}
 
 	return stmt
@@ -172,10 +174,12 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
-	p.nextToken()
+	p.nextToken() // skip "return"
 
-	for !p.curTokenIs(token.SEMICOLON) {
-		p.nextToken()
+	stmt.ReturnValue = p.parseExpression(LOWEST)
+
+	for p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken() // skip ";"
 	}
 
 	return stmt
