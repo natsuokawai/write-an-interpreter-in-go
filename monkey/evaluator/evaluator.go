@@ -82,18 +82,26 @@ func evalMinusOperatorExpression(right object.Object) object.Object {
 	return &object.Integer{Value: -value}
 }
 
-func evalInfixExpression(operator string,
-	left object.Object, right object.Object) object.Object {
-	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
+func evalInfixExpression(
+	operator string,
+	left , right object.Object,
+) object.Object {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
+	default:
+		return NULL
 	}
-	return NULL
+
 }
 
-func evalIntegerInfixExpression(operator string,
-	left object.Object, right object.Object) object.Object {
+func evalIntegerInfixExpression(
+	operator string,
+	left, right object.Object,
+) object.Object {
 	left_val := left.(*object.Integer).Value
 	right_val := right.(*object.Integer).Value
+
 	switch operator {
 	case "+":
 		return &object.Integer{Value: left_val + right_val}
