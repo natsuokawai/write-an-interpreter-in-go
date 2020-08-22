@@ -28,8 +28,9 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
-	IDENT = "IDENT" // variable name
-	INT   = "INT"
+	IDENT  = "IDENT" // variable name
+	INT    = "INT"
+	STRING = "STRING"
 
 	COMMA     = ","
 	SEMICOLON = ";"
