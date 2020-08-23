@@ -14,7 +14,8 @@ const (
 	STRING_OBJ = "STRING"
 	BOOLEAN_OBJ = "BOOLEAN"
 	FUNCTION_OBJ = "FUNCTION"
-	NULL_OBJ    = "NULL"
+	BUILTIN_OBJ = "BUILTIN"
+	NULL_OBJ = "NULL"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	ERROR_OBJ = "ERROR"
 )
@@ -81,3 +82,10 @@ func (f *Function) Inspect() string {
 
 	return out.String()
 }
+
+type BuiltinFunction func(args ...Object) Object
+type Builtin struct {
+	Fn BuiltinFunction
+}
+func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
+func (b *Builtin) Inspect() string { return "builtrin function" }
