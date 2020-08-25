@@ -18,6 +18,7 @@ const (
 	PRODUCT     // *
 	PREFIX      // -X or !X
 	CALL        // someFunc(X)
+	INDEX       // array[index]
 )
 
 var precedences = map[token.TokenType]int{
@@ -30,6 +31,7 @@ var precedences = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 type Parser struct {
@@ -88,6 +90,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 
 	return p
 }
@@ -442,14 +445,28 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 		return exp
 	}
 
-	for !p.peekTokenIs(token.RBRACKET) && !p.peekTokenIs(token.EOF) {
+	for !p.curTokenIs(token.RBRACKET) && !p.curTokenIs(token.EOF) {
+		if p.curTokenIs(token.COMMA) {
+			p.nextToken() // skip ","
+		  }
 		elem := p.parseExpression(LOWEST)
 		exp.Elements = append(exp.Elements, elem)
-		if p.peekTokenIs(token.COMMA) {
-		  p.nextToken() // move curToken to ","
-		  p.nextToken() // skip ","
-		}
+		p.nextToken()
 	}
+
+	if !p.curTokenIs(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
+
+	p.nextToken() // skip "["
+	index := p.parseExpression(LOWEST)
+	exp.Index = index
 
 	if !p.expectPeek(token.RBRACKET) {
 		return nil
