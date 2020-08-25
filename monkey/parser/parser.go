@@ -69,6 +69,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
+	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
@@ -427,4 +428,32 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	exp := &ast.ArrayLiteral{
+		Token: p.curToken,
+		Elements: []ast.Expression{},
+	}
+
+	p.nextToken() // skip "["
+
+	if p.curTokenIs(token.RBRACKET) {
+		return exp
+	}
+
+	for !p.peekTokenIs(token.RBRACKET) && !p.peekTokenIs(token.EOF) {
+		elem := p.parseExpression(LOWEST)
+		exp.Elements = append(exp.Elements, elem)
+		if p.peekTokenIs(token.COMMA) {
+		  p.nextToken() // move curToken to ","
+		  p.nextToken() // skip ","
+		}
+	}
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
 }
