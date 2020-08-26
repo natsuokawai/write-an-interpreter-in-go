@@ -52,6 +52,23 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
+	case *ast.IndexExpression:
+		result := Eval(node.Index, env)
+		if _, ok := result.(*object.Integer); !ok {
+			return newError("index must be Integer. got %s", result.Type())
+		}
+		index := result.(*object.Integer).Value
+		if index < 0 { return NULL }
+
+		array := Eval(node.Left, env)
+		if _, ok := array.(*object.Array); !ok {
+			return newError("index must be applied to Array. got %s", array.Type())
+		}
+
+		elements := array.(*object.Array).Elements
+		if index > int64(len(elements) - 1) { return NULL }
+		
+		return elements[index]
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
 	case *ast.PrefixExpression:
